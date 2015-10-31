@@ -12,7 +12,7 @@ void main() {
 		std::shared_ptr<rs::Buffer> buffer3D = std::make_shared<rs::Buffer>( "blast.ogg", true );
 		rs::Sound sound3D( buffer3D );
 
-		rs::Sound music( std::make_shared<rs::StreamingBuffer>( "music.ogg", true ));
+		rs::Sound music( std::make_shared<rs::StreamingBuffer>( "music.ogg", false ));
 
 		music.Play();
 

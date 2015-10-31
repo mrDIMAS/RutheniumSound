@@ -38,7 +38,7 @@ void rs::DecoderOGG::Decode( unsigned int blockSize, bool convertToMono ) {
 			short * sample16 = reinterpret_cast<short*>( mPCMData );	
 			int countSamples = mSize / sizeof( short );
 			for( int i = 0, k = 0; i < countSamples; i++, k += 2 ) {
-				// cast each sample to int need to avoid 'short' overflow
+				// cast each sample to 'int' need to avoid 'short' overflow
 				int sample = ( static_cast<int>( sample16[k] ) + static_cast<int>( sample16[ k + 1 ] )) / 2;
 				// clamp sample in [-32768;32767] to avoid 'clicks' in converted data
 				if( sample > SHRT_MAX ) {

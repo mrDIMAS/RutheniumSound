@@ -43,14 +43,83 @@ public:
 };
 
 ////////////////////////////////////////////////////////////
-/// \brief Base reverb effect class 
+/// \brief EAX reverb effect class 
 ////////////////////////////////////////////////////////////
-class ReverbEffect : public Effect {
+class EAXReverbEffect : public Effect {
 private:
 
 public:
-	explicit ReverbEffect();
-	virtual ~ReverbEffect();
+	explicit EAXReverbEffect();
+	virtual ~EAXReverbEffect();
+
+	float GetDensity() const;
+	void SetDensity( float density );
+
+	float GetDiffusion() const;
+	void SetDiffusion( float diffusion );
+
+	float GetGain() const;
+	void SetGain( float gain );
+
+	float GetHighFrequencyGain() const;
+	void SetHighFrequencyGain( float hfGain );
+
+	float GetLowFrequencyGain() const;
+	void SetLowFrequencyGain( float lfGain );
+
+	float GetDecayTime() const;
+	void SetDecayTime( float decayTime );
+
+	float GetDecayHighFrequencyRatio() const;
+	void SetDecayHighFrequencyRatio( float hfRatio );
+
+	float GetDecayLowFrequencyRatio() const;
+	void SetDecayLowFrequencyRatio( float lfRatio );
+
+	float GetReflectionsGain() const;
+	void SetReflectionsGain( float reflectionsGain );
+
+	float GetReflectionsDelay() const;
+	void SetReflectionsDelay( float reflectionsDelay );
+
+	rs::Vec3 GetReflectionsPan() const;
+	void SetReflectionsPan( const rs::Vec3 & reflectionsPan );
+
+	float GetLateReverbGain() const;
+	void SetLateReverbGain( float lateReverbGain );
+
+	float GetLateReverbDelay() const;
+	void SetLateReverbDelay( float lateReverbDelay );
+
+	rs::Vec3 GetLateReverbPan() const;
+	void SetLateReverbPan( const rs::Vec3 & lateReverbPan );
+
+	float GetEchoTime() const;
+	void SetEchoTime( float echoTime );
+
+	float GetEchoDepth() const;
+	void SetEchoDepth( float echoDepth );
+
+	float GetModulationTime() const;
+	void SetModulationTime( float modulationTime );
+
+	float GetModulationDepth() const;
+	void SetModulationDepth( float modulationDepth );
+
+	float GetAirAbsorptionHighFrequencyGain() const;
+	void SetAirAbsorptionHighFrequencyGain( float hfGain );
+
+	float GetHighFrequencyReference() const;
+	void SetHighFrequencyReference( float hfReference );
+
+	float GetLowFrequencyReference() const;
+	void SetLowFrequencyReference( float lfReference );
+
+	float GetRoomRolloffFactor() const;
+	void SetRoomRolloffFactor( float roomRolloffFactor );
+
+	float GetDecayHighFrequencyLimit() const;
+	void SetDecayHighFrequencyLimit( float decayHFLimit );
 };
 
 ////////////////////////////////////////////////////////////
