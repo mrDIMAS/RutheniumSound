@@ -14,6 +14,7 @@ rs::StreamingBuffer::StreamingBuffer( const std::string & fileName, bool support
 }
 
 rs::StreamingBuffer::~StreamingBuffer( ) {
+	delete mDecoder;
 	for( int i = 0; i < 2; i++ ) {
 		if( alIsBuffer( mOALQueueBuffer[0] )) {
 			alDeleteBuffers( 1, &mOALQueueBuffer[0] );

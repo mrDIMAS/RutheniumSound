@@ -15,6 +15,7 @@ rs::Buffer::Buffer( const std::string & fileName, bool support3D ) :
 }
 
 rs::Buffer::~Buffer( ) {
+	
 	if( IsValid() ) {
 		rsCheckOpenALError( alDeleteBuffers( 1, &mOALBufferID ));
 	}

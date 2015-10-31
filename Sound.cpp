@@ -19,6 +19,18 @@ rs::Sound::~Sound() {
 	rsCheckOpenALError( alDeleteSources( 1, &mOALSourceID ));
 }
 
+void rs::Sound::AttachToEffectSlot( const std::shared_ptr<rs::EffectSlot> & effectSlot ) {
+	mEffectSlot = effectSlot;
+	rsCheckOpenALError( alSource3i( mOALSourceID, AL_AUXILIARY_SEND_FILTER, mEffectSlot->GetEFXEffectSlotID(), 0, AL_FILTER_NULL ));
+}
+
+void rs::Sound::DetachFromEffectSlot() {
+	if( mEffectSlot.get() ) {
+		rsCheckOpenALError( alSource3i( mOALSourceID, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, 0, AL_FILTER_NULL ));
+		mEffectSlot.reset();
+	}
+}
+
 void rs::Sound::DoStreaming() {
 	rs::StreamingBuffer * streamingBuffer = dynamic_cast<rs::StreamingBuffer*>( mBuffer.get());
 	if( streamingBuffer ) {

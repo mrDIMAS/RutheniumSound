@@ -40,18 +40,167 @@ protected:
 public:
 	explicit Effect();
 	virtual ~Effect();
+
+	unsigned int GetEFXEffectID();
 };
 
 ////////////////////////////////////////////////////////////
 /// \brief EAX reverb effect class 
 ////////////////////////////////////////////////////////////
 class EAXReverbEffect : public Effect {
+public:
+	enum class Preset : int {
+		None = -1,
+		//Generic
+		Generic,
+		Paddedcell,
+		Room,
+		Bathroom,
+		Livingroom,
+		Stoneroom,
+		Auditorium,
+		Concerthall,
+		Cave,
+		Arena,
+		Hangar,
+		Hallway,
+		Stonecorridor,
+		Alley,
+		Forest,
+		City,
+		Mountains,
+		Quarry,
+		Plain,
+		Parkinglot,
+		Sewerpipe,
+		Underwater,
+		Drugged,
+		Dizzy,
+		Psychotic,
+
+		//Castlepresets
+		Castle_Smallroom,
+		Castle_Shortpassage,
+		Castle_Mediumroom,
+		Castle_Longpassage,
+		Castle_Largeroom,
+		Castle_Hall,
+		Castle_Cupboard,
+		Castle_Courtyard,
+		Castle_Alcove,
+
+		//Factorypresets
+		Factory_Alcove,
+		Factory_Shortpassage,
+		Factory_Mediumroom,
+		Factory_Longpassage,
+		Factory_Largeroom,
+		Factory_Hall,
+		Factory_Cupboard,
+		Factory_Courtyard,
+		Factory_Smallroom,
+
+		//Icepalacepresets
+		Icepalace_Alcove,
+		Icepalace_Shortpassage,
+		Icepalace_Mediumroom,
+		Icepalace_Longpassage,
+		Icepalace_Largeroom,
+		Icepalace_Hall,
+		Icepalace_Cupboard,
+		Icepalace_Courtyard,
+		Icepalace_Smallroom,
+
+		//Spacestationpresets
+		Spacestation_Alcove,
+		Spacestation_Mediumroom,
+		Spacestation_Shortpassage,
+		Spacestation_Longpassage,
+		Spacestation_Largeroom,
+		Spacestation_Hall,
+		Spacestation_Cupboard,
+		Spacestation_Smallroom,
+
+		//Woodengalleonpresets
+		Wooden_Alcove,
+		Wooden_Shortpassage,
+		Wooden_Mediumroom,
+		Wooden_Longpassage,
+		Wooden_Largeroom,
+		Wooden_Hall,
+		Wooden_Cupboard,
+		Wooden_Smallroom,
+		Wooden_Courtyard,
+
+		//Sportspresets
+		Sport_Emptystadium,
+		Sport_Squashcourt,
+		Sport_Smallswimmingpool,
+		Sport_Largeswimmingpool,
+		Sport_Gymnasium,
+		Sport_Fullstadium,
+		Sport_Stadiumtannoy,
+
+		//Prefabpresets
+		Prefab_Workshop,
+		Prefab_Schoolroom,
+		Prefab_Practiseroom,
+		Prefab_Outhouse,
+		Prefab_Caravan,
+
+		//Domeandpipepresets
+		Dome_Tomb,
+		Pipe_Small,
+		Dome_Saintpauls,
+		Pipe_Longthin,
+		Pipe_Large,
+		Pipe_Resonant,
+
+		//Outdoorspresets
+		Outdoors_Backyard,
+		Outdoors_Rollingplains,
+		Outdoors_Deepcanyon,
+		Outdoors_Creek,
+		Outdoors_Valley,
+
+		//Moodpresets
+		Mood_Heaven,
+		Mood_Hell,
+		Mood_Memory,
+
+		//Drivingsimulationpresets
+		Driving_Commentator,
+		Driving_Pitgarage,
+		Driving_Incar_Racer,
+		Driving_Incar_Sports,
+		Driving_Incar_Luxury,
+		Driving_Fullgrandstand,
+		Driving_Emptygrandstand,
+		Driving_Tunnel,
+
+		//Citypresets
+		City_Streets,
+		City_Subway,
+		City_Museum,
+		City_Library,
+		City_Underpass,
+		City_Abandoned,
+
+		//Miscrooms
+		Dustyroom,
+		Chapel,
+		Smallwaterroom,
+	};
 private:
+	Preset mPreset;
 
 public:
 	explicit EAXReverbEffect();
 	virtual ~EAXReverbEffect();
 
+	void SetPreset( Preset preset );
+
+	Preset GetPreset();
 	float GetDensity() const;
 	void SetDensity( float density );
 
@@ -128,9 +277,12 @@ public:
 class EffectSlot {
 private:
 	unsigned mEFXEffectSlotID;
+	std::shared_ptr<Effect> mEffect;
 public:
 	explicit EffectSlot();
 	virtual ~EffectSlot();
+	void Attach( const std::shared_ptr<Effect> & effect );
+	unsigned int GetEFXEffectSlotID();
 };
 
 ////////////////////////////////////////////////////////////
@@ -174,6 +326,8 @@ public:
 /// \brief Engine class
 ////////////////////////////////////////////////////////////
 class Engine {
+private:
+	void InitializeEAXEFXPresets();
 public:
 	enum class DistanceModel {
 		None,
@@ -209,9 +363,9 @@ protected:
 	int mFormat; ///< Format of decoded data (mono/stereo)
 	int mFileFormat; ///< Format of encoded data (mono/stereo)
 	int64_t mFullDecodedSize; ///< Size of PCM data of fully decoded file
-	explicit Decoder();
-	virtual ~Decoder();
+	explicit Decoder();	
 public:
+	virtual ~Decoder();
 	int GetFormat() const;
 	int GetFrequency() const;
 	int64_t GetFullDecodedSize() const;
@@ -300,11 +454,15 @@ private:
 	unsigned int mBufferNum;
 	unsigned int mOALSourceID;
 	std::shared_ptr<Buffer> mBuffer;
+	std::shared_ptr<EffectSlot> mEffectSlot;
 public:
 	Sound();
 	Sound( std::shared_ptr<Buffer> buffer );
 
 	~Sound();
+
+	void AttachToEffectSlot( const std::shared_ptr<EffectSlot> & effectSlot );
+	void DetachFromEffectSlot();
 
 	void DoStreaming();
 
