@@ -14,6 +14,10 @@ rs::Buffer::Buffer( const std::string & fileName, bool support3D ) :
 	rsCheckOpenALError( alBufferData( mOALBufferID, oggDecoder.GetFormat(), oggDecoder.GetDecodedData(), oggDecoder.GetSize(), oggDecoder.GetFrequency()));
 }
 
+rs::Buffer::Buffer( const rs::Buffer & otherBuffer ) {
+
+}
+
 rs::Buffer::~Buffer( ) {
 	
 	if( IsValid() ) {

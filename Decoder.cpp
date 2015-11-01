@@ -2,7 +2,7 @@
 
 rs::Decoder::Decoder() : 
 	mFormat( AL_FORMAT_MONO16 ), mFrequency( 0 ), mPCMData( nullptr ), mSize( 0 ), mFullDecodedSize( 0 ),
-	mFileFormat( AL_FORMAT_MONO16 ) {
+	mFileFormat( AL_FORMAT_MONO16 ), mEnabled( true ) {
 
 }
 
@@ -10,6 +10,10 @@ rs::Decoder::~Decoder() {
 	if( mPCMData ) {
 		delete [] mPCMData;
 	}
+}
+
+bool rs::Decoder::IsEnabled() {
+	return mEnabled;
 }
 
 int rs::Decoder::GetFormat() const {

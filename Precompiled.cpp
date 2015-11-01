@@ -17,6 +17,6 @@ void rsCheckOpenALErrorFunc( const char * file, int line, const char * func ) {
 		} else {
 			sprintf_s( errorDesc, "OpenAL Unknown Error occured in file %s in line %d in func %s", file, line, func );			
 		}
-		throw std::exception( errorDesc );
+		throw std::runtime_error( errorDesc );
 	}
 }

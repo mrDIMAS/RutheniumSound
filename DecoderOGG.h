@@ -20,6 +20,7 @@ public:
 	explicit DecoderOGG( const std::string & filename );
 	virtual ~DecoderOGG();
 	virtual void Decode( unsigned int blockSize, bool convertToMono ) final;
+	virtual void SetEnabled( bool state ) final;
 };
 
 };

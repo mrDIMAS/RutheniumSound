@@ -5,6 +5,7 @@
 #include <fstream>
 #include <memory>
 #include <sstream>
+#include <fstream>
 
 namespace rs  {
 
@@ -29,6 +30,21 @@ protected:
 public:
 	explicit Filter();
 	virtual ~Filter();
+};
+
+////////////////////////////////////////////////////////////
+/// \brief Base filter class 
+////////////////////////////////////////////////////////////
+class LowpassFilter {
+public:
+	explicit LowpassFilter( float gain, float highFrequencyGain );
+	virtual ~LowpassFilter();
+
+	float GetGain() const;
+	void SetGain( float gain );
+
+	float GetHighFrequencyGain() const;
+	void SetHighFrequencyGain();
 };
 
 ////////////////////////////////////////////////////////////
@@ -266,9 +282,6 @@ public:
 
 	float GetRoomRolloffFactor() const;
 	void SetRoomRolloffFactor( float roomRolloffFactor );
-
-	float GetDecayHighFrequencyLimit() const;
-	void SetDecayHighFrequencyLimit( float decayHFLimit );
 };
 
 ////////////////////////////////////////////////////////////
@@ -314,11 +327,15 @@ public:
 
 ////////////////////////////////////////////////////////////
 /// \brief Log class 
+///
+/// You can select file to output some information 
+///
 ////////////////////////////////////////////////////////////
 class Log {
+private:
+	static std::ofstream msFile;
 public:
-	static void Open( const std::string & file );
-	static void Close();
+	static void Open( const std::string & fileName );
 	static void Write( const std::string & message );
 };
 
@@ -328,6 +345,8 @@ public:
 class Engine {
 private:
 	void InitializeEAXEFXPresets();
+
+	explicit Engine( const Engine & other );	
 public:
 	enum class DistanceModel {
 		None,
@@ -363,7 +382,9 @@ protected:
 	int mFormat; ///< Format of decoded data (mono/stereo)
 	int mFileFormat; ///< Format of encoded data (mono/stereo)
 	int64_t mFullDecodedSize; ///< Size of PCM data of fully decoded file
+	bool mEnabled; ///< When detected end of encoded data this flag is set to false
 	explicit Decoder();	
+	explicit Decoder( const Decoder & other );	
 public:
 	virtual ~Decoder();
 	int GetFormat() const;
@@ -371,6 +392,11 @@ public:
 	int64_t GetFullDecodedSize() const;
 	int GetSize() const;
 	char * GetDecodedData() const;
+	////////////////////////////////////////////////////////////
+	/// \brief Enables decoder, rewinds it read pointer to begin of file
+	////////////////////////////////////////////////////////////
+	virtual void SetEnabled( bool state ) = 0;
+	bool IsEnabled();
 	virtual void Decode( unsigned int blockSize, bool convertToMono ) = 0;
 };
 
@@ -387,6 +413,11 @@ protected:
 	/// \brief Special constructor for derived classes
 	////////////////////////////////////////////////////////////
 	explicit Buffer( const std::string & fileName, bool support3D, bool reserved );
+
+	////////////////////////////////////////////////////////////
+	/// \brief Copy constructor is not available
+	////////////////////////////////////////////////////////////
+	explicit Buffer( const Buffer & otherBuffer );
 public:
 	////////////////////////////////////////////////////////////
 	/// \brief Default constructor 
@@ -397,7 +428,7 @@ public:
 	/// 
 	/// \param support3D 'true' to enable support of 3D effects
 	////////////////////////////////////////////////////////////
-	explicit Buffer( const std::string & fileName, bool support3D );
+	explicit Buffer( const std::string & fileName, bool support3D );	
 	virtual ~Buffer( );
 
 	std::string GetFileName() const;
@@ -442,8 +473,10 @@ public:
 	/// \param destBufferNum Destination buffer number
 	///
 	////////////////////////////////////////////////////////////
-	void DecodeNextBlock( int destBufferNum );
+	void DecodeNextBlockToBuffer( unsigned int destBuffer );
 	unsigned int * GetQueueBuffers();
+	void Rewind();
+	bool IsEndOfDataReached();
 };
 
 ////////////////////////////////////////////////////////////
@@ -451,10 +484,11 @@ public:
 ////////////////////////////////////////////////////////////
 class Sound {
 private:
-	unsigned int mBufferNum;
-	unsigned int mOALSourceID;
-	std::shared_ptr<Buffer> mBuffer;
-	std::shared_ptr<EffectSlot> mEffectSlot;
+	void UnqueueBuffers();
+	bool mLooping; ///< Used for loop streaming 
+	unsigned int mOALSourceID; ///< OpenAL Source Identifier
+	std::shared_ptr<Buffer> mBuffer; ///< Pointer to buffer
+	std::shared_ptr<EffectSlot> mEffectSlot; ///< Pointer to effect slot, on which this sound attached
 public:
 	Sound();
 	Sound( std::shared_ptr<Buffer> buffer );
@@ -465,6 +499,8 @@ public:
 	void DetachFromEffectSlot();
 
 	void DoStreaming();
+
+	void Rewind();
 
 	bool IsValid() const;
 

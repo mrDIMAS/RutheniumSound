@@ -21,46 +21,74 @@ LPALGETEFFECTIV alGetEffectiv;
 std::unordered_map<rs::EAXReverbEffect::Preset, EFXEAXREVERBPROPERTIES> gEAXEFXPresets;
 
 rs::Engine::Engine( ) {
-	const char * devices = alcGetString( nullptr, ALC_DEVICE_SPECIFIER );
-	const char * ptr = devices;
-	while( !( *ptr == '\0' && *(ptr + 1) == '\0' ) ) {
-		if( *ptr ) {
-			std::cout << *ptr;
-		} else {
-			std::cout << std::endl;
-		}
-		ptr++;
-	}
 	ALCdevice * device = alcOpenDevice( nullptr );
 	if( device ) {
+		rs::Log::Write( "OpenAL Device created successfully" );
 		ALCcontext * context = alcCreateContext( device, nullptr );
 		if( context ) {
-			alcMakeContextCurrent( context );
-			
-			alGenEffects = (LPALGENEFFECTS)alGetProcAddress( "alGenEffects" );
-			alGenFilters = (LPALGENFILTERS)alGetProcAddress( "alGenFilters" );
-			alFilterf = (LPALFILTERF)alGetProcAddress( "alFilterf" );
-			alFilteri = (LPALFILTERI)alGetProcAddress( "alFilteri" );
-			alGetFilterf = (LPALGETFILTERF)alGetProcAddress( "alGetFilterf" );
-			alDeleteEffects	= (LPALDELETEEFFECTS)alGetProcAddress( "alDeleteEffects" );
-			alIsEffect = (LPALISEFFECT)alGetProcAddress( "alIsEffect" );
-			alGenAuxiliaryEffectSlots = (LPALGENAUXILIARYEFFECTSLOTS)alGetProcAddress( "alGenAuxiliaryEffectSlots" );
-			alEffecti = (LPALEFFECTI)alGetProcAddress( "alEffecti" );
-			alEffectf = (LPALEFFECTF)alGetProcAddress( "alEffectf" );
-			alAuxiliaryEffectSloti = (LPALAUXILIARYEFFECTSLOTI)alGetProcAddress( "alAuxiliaryEffectSloti" );
-			alDeleteAuxiliaryEffectSlots = (LPALDELETEAUXILIARYEFFECTSLOTS)alGetProcAddress( "alDeleteAuxiliaryEffectSlots" );
-			alEffectfv = (LPALEFFECTFV)alGetProcAddress( "alEffectfv" );
-			alGetEffectf = (LPALGETEFFECTF)alGetProcAddress( "alGetEffectf" );
-			alGetEffecti = (LPALGETEFFECTI)alGetProcAddress( "alGetEffecti" );
-			alGetEffectfv = (LPALGETEFFECTFV)alGetProcAddress( "alGetEffectfv" );
-			alGetEffectiv = (LPALGETEFFECTIV)alGetProcAddress( "alGetEffectiv" );
+			rs::Log::Write( "OpenAL Context created successfully" );
+			if( alcMakeContextCurrent( context )) {
+				rs::Log::Write( "OpenAL Context selected as current" );
+				alGenEffects = (LPALGENEFFECTS)alGetProcAddress( "alGenEffects" );
+				rs::Log::Write( StringBuilder( "alGenEffects: " ) << (alGenEffects ? "Yes" : "No"));
 
-			InitializeEAXEFXPresets();
+				alGenFilters = (LPALGENFILTERS)alGetProcAddress( "alGenFilters" );
+				rs::Log::Write( StringBuilder( "alGenFilters: " ) << (alGenFilters ? "Yes" : "No"));
+
+				alFilterf = (LPALFILTERF)alGetProcAddress( "alFilterf" );
+				rs::Log::Write( StringBuilder( "alFilterf: " ) << (alFilterf ? "Yes" : "No"));
+
+				alFilteri = (LPALFILTERI)alGetProcAddress( "alFilteri" );
+				rs::Log::Write( StringBuilder( "alFilteri: " ) << (alFilteri ? "Yes" : "No"));
+
+				alGetFilterf = (LPALGETFILTERF)alGetProcAddress( "alGetFilterf" );
+				rs::Log::Write( StringBuilder( "alGetFilterf: " ) << (alGetFilterf ? "Yes" : "No"));
+
+				alDeleteEffects	= (LPALDELETEEFFECTS)alGetProcAddress( "alDeleteEffects" );
+				rs::Log::Write( StringBuilder( "alDeleteEffects: " ) << (alDeleteEffects ? "Yes" : "No"));
+
+				alIsEffect = (LPALISEFFECT)alGetProcAddress( "alIsEffect" );
+				rs::Log::Write( StringBuilder( "alIsEffect: " ) << (alIsEffect ? "Yes" : "No"));
+
+				alGenAuxiliaryEffectSlots = (LPALGENAUXILIARYEFFECTSLOTS)alGetProcAddress( "alGenAuxiliaryEffectSlots" );
+				rs::Log::Write( StringBuilder( "alGenAuxiliaryEffectSlots: " ) << (alGenAuxiliaryEffectSlots ? "Yes" : "No"));
+
+				alEffecti = (LPALEFFECTI)alGetProcAddress( "alEffecti" );
+				rs::Log::Write( StringBuilder( "alEffecti: " ) << (alEffecti ? "Yes" : "No"));
+
+				alEffectf = (LPALEFFECTF)alGetProcAddress( "alEffectf" );
+				rs::Log::Write( StringBuilder( "alEffectf: " ) << (alEffectf ? "Yes" : "No"));
+
+				alAuxiliaryEffectSloti = (LPALAUXILIARYEFFECTSLOTI)alGetProcAddress( "alAuxiliaryEffectSloti" );
+				rs::Log::Write( StringBuilder( "alAuxiliaryEffectSloti: " ) << (alAuxiliaryEffectSloti ? "Yes" : "No"));
+
+				alDeleteAuxiliaryEffectSlots = (LPALDELETEAUXILIARYEFFECTSLOTS)alGetProcAddress( "alDeleteAuxiliaryEffectSlots" );
+				rs::Log::Write( StringBuilder( "alDeleteAuxiliaryEffectSlots: " ) << (alDeleteAuxiliaryEffectSlots ? "Yes" : "No"));
+
+				alEffectfv = (LPALEFFECTFV)alGetProcAddress( "alEffectfv" );
+				rs::Log::Write( StringBuilder( "alEffectfv: " ) << (alEffectfv ? "Yes" : "No"));
+
+				alGetEffectf = (LPALGETEFFECTF)alGetProcAddress( "alGetEffectf" );
+				rs::Log::Write( StringBuilder( "alGetEffectf: " ) << (alGetEffectf ? "Yes" : "No"));
+
+				alGetEffecti = (LPALGETEFFECTI)alGetProcAddress( "alGetEffecti" );
+				rs::Log::Write( StringBuilder( "alGetEffecti: " ) << (alGetEffecti ? "Yes" : "No"));
+
+				alGetEffectfv = (LPALGETEFFECTFV)alGetProcAddress( "alGetEffectfv" );
+				rs::Log::Write( StringBuilder( "alGetEffectfv: " ) << (alGetEffectfv ? "Yes" : "No"));
+
+				alGetEffectiv = (LPALGETEFFECTIV)alGetProcAddress( "alGetEffectiv" );
+				rs::Log::Write( StringBuilder( "alGetEffectiv: " ) << (alGetEffectiv ? "Yes" : "No"));
+
+				InitializeEAXEFXPresets();
+			} else {
+				throw std::runtime_error( "Unable to make context current" );
+			}				
 		} else {
-			throw std::exception( "Unable to create context" );
+			throw std::runtime_error( "Unable to create context" );
 		}
 	} else {
-		throw std::exception( "Unable to open device" );
+		throw std::runtime_error( "Unable to open device" );
 	}
 }
 
@@ -98,6 +126,8 @@ void rs::Engine::InitializeEAXEFXPresets() {
 	for( int i = 0; i < 113; i++ ) {
 		gEAXEFXPresets[static_cast<rs::EAXReverbEffect::Preset>( i )] = rp[i];
 	}
+
+	rs::Log::Write( "113 EFX Presets available" );
 }
 
 float rs::Engine::GetSpeedOfSound() const {

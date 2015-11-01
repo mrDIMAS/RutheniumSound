@@ -1,10 +1,10 @@
 #include "Precompiled.h"
 
-rs::Sound::Sound() : mBufferNum( 0 ), mOALSourceID( 0 ) {
+rs::Sound::Sound() : mOALSourceID( 0 ), mLooping( false ) {
 	rsCheckOpenALError( alGenSources( 1, &mOALSourceID ));
 }
 
-rs::Sound::Sound( std::shared_ptr<Buffer> buffer ) : mBuffer( buffer ), mOALSourceID( 0 ), mBufferNum( 0 ) {
+rs::Sound::Sound( std::shared_ptr<Buffer> buffer ) : mBuffer( buffer ), mOALSourceID( 0 ) {
     rsCheckOpenALError( alGenSources( 1, &mOALSourceID ));
 
 	rs::StreamingBuffer * streamingBuffer = dynamic_cast<rs::StreamingBuffer*>( buffer.get());
@@ -31,21 +31,51 @@ void rs::Sound::DetachFromEffectSlot() {
 	}
 }
 
+void rs::Sound::UnqueueBuffers() {
+	Stop();
+
+	ALuint bufferDummy;
+	int processedBufferCount;
+	rsCheckOpenALError( alGetSourcei( mOALSourceID, AL_BUFFERS_PROCESSED, &processedBufferCount ));
+	while( processedBufferCount-- ) {
+		alSourceUnqueueBuffers( mOALSourceID, 1, &bufferDummy );
+	}
+}
+
+void rs::Sound::Rewind() {
+	rs::StreamingBuffer * streamingBuffer = dynamic_cast<rs::StreamingBuffer*>( mBuffer.get());
+	if( streamingBuffer ) {
+		UnqueueBuffers();
+		streamingBuffer->Rewind();
+		rsCheckOpenALError( alSourceQueueBuffers( mOALSourceID, 2, streamingBuffer->GetQueueBuffers()));
+	} else {
+		alSourceRewind( mOALSourceID );
+	}
+	Play();
+}
+
 void rs::Sound::DoStreaming() {
 	rs::StreamingBuffer * streamingBuffer = dynamic_cast<rs::StreamingBuffer*>( mBuffer.get());
 	if( streamingBuffer ) {
-		unsigned int * oalBuffers = streamingBuffer->GetQueueBuffers();
+		if( streamingBuffer->IsEndOfDataReached() ) {
+			if( mLooping ) {
+				Rewind();
+			}
+		}
 
 		int processedBufferCount;
 		rsCheckOpenALError( alGetSourcei( mOALSourceID, AL_BUFFERS_PROCESSED, &processedBufferCount ));
 		 
 		if( processedBufferCount == 1 ) {
-			rsCheckOpenALError( alSourceUnqueueBuffers( mOALSourceID, 1, &oalBuffers[ mBufferNum ] ));
-			streamingBuffer->DecodeNextBlock( mBufferNum );
-			rsCheckOpenALError( alSourceQueueBuffers( mOALSourceID, 1, &oalBuffers[ mBufferNum ] ));
-			mBufferNum = 1 - mBufferNum; // flip-flop from 0 to 1
+			if( !streamingBuffer->IsEndOfDataReached() ) {
+				ALuint freeBuffer;
+				rsCheckOpenALError( alSourceUnqueueBuffers( mOALSourceID, 1, &freeBuffer ));
+				streamingBuffer->DecodeNextBlockToBuffer( freeBuffer );
+				rsCheckOpenALError( alSourceQueueBuffers( mOALSourceID, 1, &freeBuffer ));
+			}
 		} else if( processedBufferCount == 2 ) {
-			rsCheckOpenALError( alSourceUnqueueBuffers( mOALSourceID, 2, oalBuffers ));
+			ALuint dummy[2];
+			rsCheckOpenALError( alSourceUnqueueBuffers( mOALSourceID, 2, dummy ));
 		}
 	}
 }
@@ -202,12 +232,24 @@ bool rs::Sound::IsStreaming() const {
 
 bool rs::Sound::IsLooping() const {
 	int isLooping;
-	rsCheckOpenALError( alGetSourcei( mOALSourceID, AL_LOOPING, &isLooping ));
+	rs::StreamingBuffer * streamingBuffer = dynamic_cast<rs::StreamingBuffer*>( mBuffer.get());
+	if( streamingBuffer ) {
+		isLooping = mLooping;
+	} else {
+		rsCheckOpenALError( alGetSourcei( mOALSourceID, AL_LOOPING, &isLooping ));
+	}
 	return isLooping != 0;
 }
 
 void rs::Sound::SetLooping( bool looping ) {
-	rsCheckOpenALError( alSourcei( mOALSourceID, AL_LOOPING, looping ? AL_TRUE : AL_FALSE ));
+	rs::StreamingBuffer * streamingBuffer = dynamic_cast<rs::StreamingBuffer*>( mBuffer.get());
+	if( streamingBuffer ) {
+		mLooping = looping;
+	} else {
+		// when enabling source's AL_LOOPING, openal wouldn't increase AL_BUFFERS_PROCESSED
+		// and streaming will not work, so with streaming buffer we must deal in special way
+		rsCheckOpenALError( alSourcei( mOALSourceID, AL_LOOPING, looping ? AL_TRUE : AL_FALSE ));
+	}
 }
 
 bool rs::Sound::IsPlaying() const {
@@ -216,7 +258,13 @@ bool rs::Sound::IsPlaying() const {
 	return sourceState == AL_PLAYING;
 }
 
-void rs::Sound::Play() {
+void rs::Sound::Play() {	
+	rs::StreamingBuffer * streamingBuffer = dynamic_cast<rs::StreamingBuffer*>( mBuffer.get());
+	if( streamingBuffer ) {
+		if( streamingBuffer->IsEndOfDataReached() ) {
+			Rewind();
+		}
+	}
 	rsCheckOpenALError( alSourcePlay( mOALSourceID ));
 }
 

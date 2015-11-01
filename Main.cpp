@@ -4,6 +4,8 @@
 
 void main() {
 	try {
+		rs::Log::Open( "rs.log" );
+
 		rs::Engine engine;
 
 		// Create 2D sound
@@ -15,7 +17,7 @@ void main() {
 		rs::Sound sound3D( buffer3D );
 
 		// Create music with streaming buffer
-		rs::Sound music( std::make_shared<rs::StreamingBuffer>( "music.ogg", true ));
+		rs::Sound music( std::make_shared<rs::StreamingBuffer>( "lamp_buzz.ogg", true ));
 
 		// Create first reverb effect
 		std::shared_ptr<rs::EAXReverbEffect> reverbEffect1 = std::make_shared<rs::EAXReverbEffect>( );
@@ -36,6 +38,7 @@ void main() {
 		// Attach music to first effect slot
 		music.AttachToEffectSlot( effectSlot1 );
 		music.Play();
+		music.SetLooping( true );
 
 		// Attach 3D sound to second effect slot
 		sound3D.AttachToEffectSlot( effectSlot2 );
@@ -43,6 +46,9 @@ void main() {
 		while( !GetAsyncKeyState( VK_ESCAPE )) {
 			if( GetAsyncKeyState( 'Q' )) {
 				music.Pause();
+			}
+			if( GetAsyncKeyState( 'R' )) {
+				music.Rewind();
 			}
 			if( GetAsyncKeyState( 'E' )) {
 				if( !music.IsPlaying() ) {
@@ -56,7 +62,7 @@ void main() {
 			}
 			music.DoStreaming();
 		}
-	} catch( std::exception except ) {
+	} catch( std::runtime_error except ) {
 		std::cout << except.what() << std::endl;
 	}
 }

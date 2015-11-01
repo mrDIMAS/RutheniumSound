@@ -38,23 +38,8 @@ void rs::EAXReverbEffect::SetPreset( rs::EAXReverbEffect::Preset preset ) {
 			rsCheckOpenALError( alEffectf( mEFXEffectID, AL_EAXREVERB_HFREFERENCE, properties.flHFReference ));
 			rsCheckOpenALError( alEffectf( mEFXEffectID, AL_EAXREVERB_LFREFERENCE, properties.flLFReference ));
 			rsCheckOpenALError( alEffectf( mEFXEffectID, AL_EAXREVERB_ROOM_ROLLOFF_FACTOR, properties.flRoomRolloffFactor ));
-			//rsCheckOpenALError( alEffectf( mEFXEffectID, AL_EAXREVERB_DECAY_HFLIMIT, properties.iDecayHFLimit ));
 		}
 	}
-}
-
-void rs::EAXReverbEffect::SetDecayHighFrequencyLimit( float decayHFLimit ) {
-	if( alEffectf ) {
-		rsCheckOpenALError( alEffectf( mEFXEffectID, AL_EAXREVERB_DECAY_HFLIMIT, decayHFLimit ));
-	}
-}
-
-float rs::EAXReverbEffect::GetDecayHighFrequencyLimit() const {
-	float decayHFLimit = 0.0f;
-	if( alGetEffectf ) {
-		rsCheckOpenALError( alGetEffectf( mEFXEffectID, AL_EAXREVERB_DECAY_HFLIMIT, &decayHFLimit ));
-	}
-	return decayHFLimit;
 }
 
 void rs::EAXReverbEffect::SetRoomRolloffFactor( float roomRolloffFactor ) {
@@ -65,47 +50,65 @@ void rs::EAXReverbEffect::SetRoomRolloffFactor( float roomRolloffFactor ) {
 
 float rs::EAXReverbEffect::GetRoomRolloffFactor() const {
 	float roomRolloffFactor = 0.0f;
-	alGetEffectf( mEFXEffectID, AL_EAXREVERB_ROOM_ROLLOFF_FACTOR, &roomRolloffFactor );
+	if( alGetEffectf ) {
+		rsCheckOpenALError( alGetEffectf( mEFXEffectID, AL_EAXREVERB_ROOM_ROLLOFF_FACTOR, &roomRolloffFactor ));
+	}
 	return roomRolloffFactor;
 }
 
 void rs::EAXReverbEffect::SetLowFrequencyReference( float lfReference ) {
-	alEffectf( mEFXEffectID, AL_EAXREVERB_LFREFERENCE, lfReference );
+	if( alEffectf ) {
+		rsCheckOpenALError( alEffectf( mEFXEffectID, AL_EAXREVERB_LFREFERENCE, lfReference ));
+	}
 }
 
 float rs::EAXReverbEffect::GetLowFrequencyReference() const {
-	float lfReference;
-	alGetEffectf( mEFXEffectID, AL_EAXREVERB_LFREFERENCE, &lfReference );
+	float lfReference = 0.0f;
+	if( alGetEffectf ) {
+		rsCheckOpenALError( alGetEffectf( mEFXEffectID, AL_EAXREVERB_LFREFERENCE, &lfReference ));
+	}
 	return lfReference;
 }
 
 void rs::EAXReverbEffect::SetHighFrequencyReference( float hfReference ) {
-	alEffectf( mEFXEffectID, AL_EAXREVERB_HFREFERENCE, hfReference );
+	if( alEffectf ) {
+		rsCheckOpenALError( alEffectf( mEFXEffectID, AL_EAXREVERB_HFREFERENCE, hfReference ));
+	}
 }
 
 float rs::EAXReverbEffect::GetHighFrequencyReference() const {
-	float hfReference;
-	alGetEffectf( mEFXEffectID, AL_EAXREVERB_HFREFERENCE, &hfReference );
+	float hfReference = 0.0f;
+	if( alGetEffectf ) {
+		rsCheckOpenALError( alGetEffectf( mEFXEffectID, AL_EAXREVERB_HFREFERENCE, &hfReference ));
+	}
 	return hfReference;
 }
 
 void rs::EAXReverbEffect::SetAirAbsorptionHighFrequencyGain( float hfGain ) {
-	alEffectf( mEFXEffectID, AL_EAXREVERB_AIR_ABSORPTION_GAINHF, hfGain );
+	if( alEffectf ) {
+		rsCheckOpenALError( alEffectf( mEFXEffectID, AL_EAXREVERB_AIR_ABSORPTION_GAINHF, hfGain ));
+	}
 }
 
 float rs::EAXReverbEffect::GetAirAbsorptionHighFrequencyGain() const {
-	float hfGain;
-	alGetEffectf( mEFXEffectID, AL_EAXREVERB_AIR_ABSORPTION_GAINHF, &hfGain );
+	float hfGain = 0.0f;
+	if( alGetEffectf ) {
+		rsCheckOpenALError( alGetEffectf( mEFXEffectID, AL_EAXREVERB_AIR_ABSORPTION_GAINHF, &hfGain ));
+	}
 	return hfGain;
 }
 
 void rs::EAXReverbEffect::SetModulationDepth( float modulationDepth ) {
-	alEffectf( mEFXEffectID, AL_EAXREVERB_MODULATION_DEPTH, modulationDepth );
+	if( alEffectf ) {
+		rsCheckOpenALError( alEffectf( mEFXEffectID, AL_EAXREVERB_MODULATION_DEPTH, modulationDepth ));
+	}
 }
 
 float rs::EAXReverbEffect::GetModulationDepth() const {
-	float modDepth;
-	alGetEffectf( mEFXEffectID, AL_EAXREVERB_MODULATION_DEPTH, &modDepth );
+	float modDepth = 0.0f;
+	if( alGetEffectf ) {
+		rsCheckOpenALError( alGetEffectf( mEFXEffectID, AL_EAXREVERB_MODULATION_DEPTH, &modDepth ));
+	}
 	return modDepth;
 }
 

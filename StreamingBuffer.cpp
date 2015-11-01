@@ -9,7 +9,7 @@ rs::StreamingBuffer::StreamingBuffer( const std::string & fileName, bool support
 	mDecoder = new DecoderOGG( fileName );
 
 	for( int i = 0; i < 2; i++ ) {
-		DecodeNextBlock( i );
+		DecodeNextBlockToBuffer( mOALQueueBuffer[ i ] );
 	}
 }
 
@@ -22,12 +22,22 @@ rs::StreamingBuffer::~StreamingBuffer( ) {
 	}
 }
 
-void rs::StreamingBuffer::DecodeNextBlock( int destBufferNum ) {
-	if( destBufferNum < 0 && destBufferNum > 1 ) {
-		throw std::exception( "Unable to decode! Invalid buffer number" );
-	} else {
+void rs::StreamingBuffer::Rewind() {
+	mDecoder->SetEnabled( true );
+
+	for( int i = 0; i < 2; i++ ) {
+		DecodeNextBlockToBuffer( mOALQueueBuffer[ i ] );
+	}
+}
+
+bool rs::StreamingBuffer::IsEndOfDataReached() {
+	return !mDecoder->IsEnabled();
+}
+
+void rs::StreamingBuffer::DecodeNextBlockToBuffer( unsigned int destBuffer ) {
+	if( mDecoder->IsEnabled() ) {
 		mDecoder->Decode( mBlockSize, mSupport3D );
-		rsCheckOpenALError( alBufferData( mOALQueueBuffer[destBufferNum], mDecoder->GetFormat(), mDecoder->GetDecodedData(), mDecoder->GetSize(), mDecoder->GetFrequency()));
+		rsCheckOpenALError( alBufferData( destBuffer, mDecoder->GetFormat(), mDecoder->GetDecodedData(), mDecoder->GetSize(), mDecoder->GetFrequency()));	
 	}
 }
 

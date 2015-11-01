@@ -3,57 +3,66 @@
 
 
 void rs::DecoderOGG::Decode( unsigned int blockSize, bool convertToMono ) {
-	if( mPCMData ) {
-		if( blockSize != mLastBlockSize ) {
-			delete [] mPCMData;		
+	if( mEnabled ) {
+		if( mPCMData ) {
+			if( blockSize != mLastBlockSize ) {
+				delete [] mPCMData;		
+				mPCMData = new char[blockSize];
+			}
+		} else {
 			mPCMData = new char[blockSize];
+		}		
+
+		// begin ogg decoding
+		unsigned long totalBytesDecoded = 0;
+		int currentSection = 0;
+
+		// try to decode blockSize bytes
+		while( totalBytesDecoded < blockSize ) {
+			int bytesDecoded = ov_read( &mVorbisFile, (char*)( mPCMData + totalBytesDecoded ), blockSize - totalBytesDecoded, 0, 2, 1, &currentSection );
+
+			// end of data
+			if( bytesDecoded <= 0 ) {
+				mEnabled = false;
+				break;
+			}
+
+			totalBytesDecoded += bytesDecoded;
 		}
-	} else {
-		mPCMData = new char[blockSize];
-	}		
 
-	// begin ogg decoding
-	unsigned long totalBytesDecoded = 0;
-	int currentSection = 0;
+		mSize = totalBytesDecoded;
 
-	// try to decode blockSize bytes
-	while( totalBytesDecoded < blockSize ) {
-		int bytesDecoded = ov_read( &mVorbisFile, (char*)( mPCMData + totalBytesDecoded ), blockSize - totalBytesDecoded, 0, 2, 1, &currentSection );
-
-		// end of data
-		if( bytesDecoded <= 0 ) {
-			// rewind
-			ov_time_seek( &mVorbisFile, 0.0f );
-			break;
+		if( convertToMono ) {
+			if( mFileFormat == AL_FORMAT_STEREO16 ) {
+				mSize /= 2;
+				short * sample16 = reinterpret_cast<short*>( mPCMData );	
+				int countSamples = mSize / sizeof( short );
+				for( int i = 0, k = 0; i < countSamples; i++, k += 2 ) {
+					// cast each sample to 'int' need to avoid 'short' overflow
+					int sample = ( static_cast<int>( sample16[k] ) + static_cast<int>( sample16[ k + 1 ] )) / 2;
+					// clamp sample in [-32768;32767] to avoid 'clicks' in converted data
+					if( sample > SHRT_MAX ) {
+						sample = SHRT_MAX;
+					}
+					if( sample < SHRT_MIN ) {
+						sample = SHRT_MIN;
+					}
+					sample16[i] = static_cast<short>( sample );
+				}				
+				mFormat = AL_FORMAT_MONO16;
+			}
 		}
 
-		totalBytesDecoded += bytesDecoded;
+		mLastBlockSize = blockSize;
 	}
+}
 
-	mSize = totalBytesDecoded;
-
-	if( convertToMono ) {
-		if( mFileFormat == AL_FORMAT_STEREO16 ) {
-			mSize /= 2;
-			short * sample16 = reinterpret_cast<short*>( mPCMData );	
-			int countSamples = mSize / sizeof( short );
-			for( int i = 0, k = 0; i < countSamples; i++, k += 2 ) {
-				// cast each sample to 'int' need to avoid 'short' overflow
-				int sample = ( static_cast<int>( sample16[k] ) + static_cast<int>( sample16[ k + 1 ] )) / 2;
-				// clamp sample in [-32768;32767] to avoid 'clicks' in converted data
-				if( sample > SHRT_MAX ) {
-					sample = SHRT_MAX;
-				}
-				if( sample < SHRT_MIN ) {
-					sample = SHRT_MIN;
-				}
-				sample16[i] = static_cast<short>( sample );
-			}				
-			mFormat = AL_FORMAT_MONO16;
-		}
+void rs::DecoderOGG::SetEnabled( bool state ) {
+	mEnabled = state;
+	// rewind
+	if( mEnabled ) {
+		ov_time_seek( &mVorbisFile, 0.0f );	
 	}
-
-	mLastBlockSize = blockSize;
 }
 
 rs::DecoderOGG::~DecoderOGG() {
@@ -83,13 +92,14 @@ rs::DecoderOGG::DecoderOGG( const std::string & filename ) : mLastBlockSize( 0 )
 				mFileFormat = AL_FORMAT_MONO16;
 				mFormat = mFileFormat;
 			} else {
-				throw std::exception( "This file is unsupported - channel count > 2!" );
+				ov_clear( &mVorbisFile );
+				throw std::runtime_error( "This file is unsupported - channel count > 2!" );
 			}
 		} else {
-			throw std::exception( "This file is not valid ogg!" );
+			throw std::runtime_error( "This file is not valid ogg!" );
 		}
 	} else {
-		throw std::exception( "Unable to read file!" );
+		throw std::runtime_error( "Unable to read file!" );
 	}
 }
 
